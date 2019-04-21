@@ -103,7 +103,7 @@ class _ConvNd(nn.Module):
             s += ', output_padding={output_padding}'
         if self.groups != 1:
             s += ', groups={groups}'
-        if self.bias is None:
+        if hasattr(self, 'bias') and self.bias is None:
             s += ', bias=False'
         return s.format(**self.__dict__)
 
