@@ -141,7 +141,7 @@ class BBBConv2d(_ConvNd):
 
         # sample from output
         if cuda:
-            output = conv_qw_mean + conv_qw_logvar * (torch.randn(conv_qw_mean.size())).cuda()
+            output = conv_qw_mean + conv_qw_logvar * torch.cuda.FloatTensor(conv_qw_mean.size()).normal_()
         else:
             output = conv_qw_mean + conv_qw_logvar * (torch.randn(conv_qw_mean.size()))
 
@@ -233,7 +233,7 @@ class BBBLinearFactorial(nn.Module):
 
         # sample from output
         if cuda:
-            output = fc_qw_mean + fc_qwlogvar * (torch.randn(fc_qw_mean.size())).cuda()
+            output = fc_qw_mean + fc_qwlogvar * torch.cuda.FloatTensor(conv_qw_mean.size()).normal_()
         else:
             output = fc_qw_mean + fc_qwlogvar * (torch.randn(fc_qw_mean.size()))
 
