@@ -57,13 +57,13 @@ class _ConvNd(nn.Module):
 
         # ...and output...
         self.conv_qw_mean = Parameter(torch.Tensor(out_channels, in_channels // groups, *kernel_size))
-        self.conv_qw_std = Parameter(torch.Tensor(out_channels, in_channels // groups, *kernel_size))
+        self.conv_qw_logvar = Parameter(torch.Tensor(out_channels, in_channels // groups, *kernel_size))
 
         # ...as normal distributions
         self.qw = Normal(mu=self.qw_mean, logvar=self.qw_logvar)
         # self.qb = Normal(mu=self.qb_mean, logvar=self.qb_logvar)
 
-        self.conv_qw = Normalout(mu=self.conv_qw_mean, std=self.conv_qw_std)
+        self.conv_qw = Normalout(mu=self.conv_qw_mean, logvar=self.conv_qw_logvar)
 
         # initialise
         self.log_alpha = Parameter(torch.Tensor(1, 1))
@@ -89,7 +89,7 @@ class _ConvNd(nn.Module):
         # self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
 
         self.conv_qw_mean.data.uniform_(-stdv, stdv)
-        self.conv_qw_std.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
+        self.conv_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.log_alpha.data.uniform_(-stdv, stdv)
 
     def extra_repr(self):
@@ -132,18 +132,18 @@ class BBBConv2d(_ConvNd):
         # local reparameterization trick for convolutional layer
         conv_qw_mean = F.conv2d(input=input, weight=self.qw_mean, stride=self.stride, padding=self.padding,
                                 dilation=self.dilation, groups=self.groups)
-        conv_qw_std = torch.sqrt(1e-8 + F.conv2d(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2),
+        conv_qw_logvar = torch.log(1e-8 + F.conv2d(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2),
                                                  stride=self.stride, padding=self.padding, dilation=self.dilation, groups=self.groups))
 
         if cuda:
             conv_qw_mean.cuda()
-            conv_qw_std.cuda()
+            conv_qw_logvar.cuda()
 
         # sample from output
         if cuda:
-            output = conv_qw_mean + conv_qw_std * (torch.randn(conv_qw_mean.size())).cuda()
+            output = conv_qw_mean + conv_qw_logvar * (torch.randn(conv_qw_mean.size())).cuda()
         else:
-            output = conv_qw_mean + conv_qw_std * (torch.randn(conv_qw_mean.size()))
+            output = conv_qw_mean + conv_qw_logvar * (torch.randn(conv_qw_mean.size()))
 
         if cuda:
             output.cuda()
@@ -186,12 +186,12 @@ class BBBLinearFactorial(nn.Module):
 
         # ...and output...
         self.fc_qw_mean = Parameter(torch.Tensor(out_features, in_features))
-        self.fc_qw_std = Parameter(torch.Tensor(out_features, in_features))
+        self.fc_qw_logvar = Parameter(torch.Tensor(out_features, in_features))
 
         # ...as normal distributions
         self.qw = Normal(mu=self.qw_mean, logvar=self.qw_logvar)
         # self.qb = Normal(mu=self.qb_mean, logvar=self.qb_logvar)
-        self.fc_qw = Normalout(mu=self.fc_qw_mean, std=self.fc_qw_std)
+        self.fc_qw = Normalout(mu=self.fc_qw_mean, logvar=self.fc_qw_logvar)
 
         # initialise
         self.log_alpha = Parameter(torch.Tensor(1, 1))
@@ -211,7 +211,7 @@ class BBBLinearFactorial(nn.Module):
         # self.qb_mean.data.uniform_(-stdv, stdv)
         # self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.fc_qw_mean.data.uniform_(-stdv, stdv)
-        self.fc_qw_std.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
+        self.fc_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.log_alpha.data.uniform_(-stdv, stdv)
 
     def forward(self, input):
@@ -225,17 +225,17 @@ class BBBLinearFactorial(nn.Module):
         """
 
         fc_qw_mean = F.linear(input=input, weight=self.qw_mean)
-        fc_qw_si = torch.sqrt(1e-8 + F.linear(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2)))
+        fc_qwlogvar = torch.log(1e-8 + F.linear(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2)))
 
         if cuda:
             fc_qw_mean.cuda()
-            fc_qw_si.cuda()
+            fc_qwlogvar.cuda()
 
         # sample from output
         if cuda:
-            output = fc_qw_mean + fc_qw_si * (torch.randn(fc_qw_mean.size())).cuda()
+            output = fc_qw_mean + fc_qwlogvar * (torch.randn(fc_qw_mean.size())).cuda()
         else:
-            output = fc_qw_mean + fc_qw_si * (torch.randn(fc_qw_mean.size()))
+            output = fc_qw_mean + fc_qwlogvar * (torch.randn(fc_qw_mean.size()))
 
         if cuda:
             output.cuda()
