@@ -133,8 +133,6 @@ class BBBConv2d(_ConvNd):
         """
 
         # local reparameterization trick for convolutional layer
-        print(input.shape)
-        print(self.qw_mean.shape)
         conv_qw_mean = F.conv2d(input=input, weight=self.qw_mean, stride=self.stride, padding=self.padding,
                                 dilation=self.dilation, groups=self.groups)
         conv_qw_std = torch.sqrt(1e-8 + F.conv2d(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2),
