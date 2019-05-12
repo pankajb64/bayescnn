@@ -252,8 +252,15 @@ class BBBLinearFactorial(nn.Module):
         qw_logpdf = self.fc_qw.logpdf(w_sample)
 
         kl = torch.sum(qw_logpdf - self.pw.logpdf(w_sample))
+        
+        #print(ret_mean_std)
 
-        return output, kl if not ret_mean_std else output, kl, fc_qw_mean, fc_qw_std
+        if not ret_mean_std:
+            #print("returning 2 args")
+            return output, kl
+        else:
+            #print("returning 4 args")
+            return output, kl, fc_qw_mean, fc_qw_std
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
