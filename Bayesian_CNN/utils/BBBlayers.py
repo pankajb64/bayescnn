@@ -93,7 +93,7 @@ class _ConvNd(nn.Module):
 
         self.conv_qw_mean.data.uniform_(-stdv, stdv)
         self.conv_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
-        self.log_alpha.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
+        self.log_alpha.data.uniform_(-stdv, stdv)
 
     def extra_repr(self):
         s = ('{in_channels}, {out_channels}, kernel_size={kernel_size}'
@@ -217,7 +217,7 @@ class BBBLinearFactorial(nn.Module):
         # self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.fc_qw_mean.data.uniform_(-stdv, stdv)
         self.fc_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
-        self.log_alpha.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
+        self.log_alpha.data.uniform_(-stdv, stdv)
 
     def forward(self, input):
         raise NotImplementedError()
