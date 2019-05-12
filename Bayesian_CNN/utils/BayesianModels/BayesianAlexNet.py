@@ -35,7 +35,7 @@ class BBBAlexNet(nn.Module):
 
         self.layers = nn.ModuleList(layers)
 
-    def probforward(self, x):
+    def probforward(self, x, ret_mean_std=False):
         'Forward pass with Bayesian weights'
         kl = 0
         for layer in self.layers:
@@ -44,10 +44,14 @@ class BBBAlexNet(nn.Module):
                 kl += _kl
 
             elif hasattr(layer, 'fcprobforward') and callable(layer.fcprobforward):
-                x, _kl, = layer.fcprobforward(x)
-                kl += _kl
+                if ret_mean_std:
+                    x, _kl, fc_qw_mean, fc_qw_std = layer.fcprobforward(x, True)
+                    kl += _kl
+                else:
+                    x, _kl, = layer.fcprobforward(x, False)
+                    kl += _kl    
             else:
                 x = layer(x)
         logits = x
         #print('logits', logits)
-        return logits, kl
+        return logits, kl if not ret_mean_std else logits, kl, fc_qw_mean, fc_qw_std

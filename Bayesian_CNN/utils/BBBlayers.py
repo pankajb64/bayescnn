@@ -93,7 +93,7 @@ class _ConvNd(nn.Module):
 
         self.conv_qw_mean.data.uniform_(-stdv, stdv)
         self.conv_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
-        self.log_alpha.data.uniform_(-stdv, stdv)
+        self.log_alpha.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
 
     def extra_repr(self):
         s = ('{in_channels}, {out_channels}, kernel_size={kernel_size}'
@@ -217,12 +217,12 @@ class BBBLinearFactorial(nn.Module):
         # self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.fc_qw_mean.data.uniform_(-stdv, stdv)
         self.fc_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
-        self.log_alpha.data.uniform_(-stdv, stdv)
+        self.log_alpha.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
 
     def forward(self, input):
         raise NotImplementedError()
 
-    def fcprobforward(self, input):
+    def fcprobforward(self, input, ret_mean_std=False):
         """
         Probabilistic forwarding method.
         :param input: data tensor
@@ -253,7 +253,7 @@ class BBBLinearFactorial(nn.Module):
 
         kl = torch.sum(qw_logpdf - self.pw.logpdf(w_sample))
 
-        return output, kl
+        return output, kl if not ret_mean_std else output, kl, fc_qw_mean, fc_qw_std
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
