@@ -1,3 +1,5 @@
+import torch.nn as nn
+
 class BBBFCHousePricing(nn.Module):
     def __init__(self,inputs):
         super(BBBFCHousePricing, self).__init__()
