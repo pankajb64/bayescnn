@@ -1,5 +1,6 @@
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
 
 def load_house_attributes(inputPath):
 	# initialize the list of column names in the CSV file and then
