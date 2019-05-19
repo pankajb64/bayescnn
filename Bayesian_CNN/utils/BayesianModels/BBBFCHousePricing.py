@@ -1,4 +1,5 @@
 import torch.nn as nn
+from utils.BBBlayers import BBBLinearFactorial
 
 class BBBFCHousePricing(nn.Module):
     def __init__(self,inputs):
