@@ -269,12 +269,13 @@ class BBBLinearFactorial(nn.Module):
 
 
 class GaussianVariationalInference(nn.Module):
-    def __init__(self, loss=nn.CrossEntropyLoss()):
+    def __init__(self, loss=nn.CrossEntropyLoss(), log=False):
         super(GaussianVariationalInference, self).__init__()
         self.loss = loss
+        self.log = log
 
     def forward(self, logits, y, kl, beta):
-        logpy = -self.loss(logits, y)
+        logpy = -self.loss(logits, y) if not self.log else -torch.log(self.loss(logits, y))
 
         ll = logpy - beta * kl  # ELBO
         loss = -ll
