@@ -2,15 +2,15 @@ import torch.nn as nn
 from utils.BBBlayers import BBBLinearFactorial
 
 class BBBFCHousePricing(nn.Module):
-    def __init__(self,inputs):
+    def __init__(self,inputs, bias=False):
         super(BBBFCHousePricing, self).__init__()
-        self.fc1 = BBBLinearFactorial(inputs, 8, bias=True)
+        self.fc1 = BBBLinearFactorial(inputs, 8, bias=bias)
         self.soft1 = nn.ReLU()
 
-        self.fc2 = BBBLinearFactorial(8, 4, bias=True)
+        self.fc2 = BBBLinearFactorial(8, 4, bias=bias)
         self.soft2 = nn.ReLU()
 
-        self.fc3 = BBBLinearFactorial(4, 1, bias=True)
+        self.fc3 = BBBLinearFactorial(4, 1, bias=bias)
 
         layers = [self.fc1, self.soft1, self.fc2, self.soft2, self.fc3]
 
