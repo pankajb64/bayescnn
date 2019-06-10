@@ -168,7 +168,7 @@ class BBBLinearFactorial(nn.Module):
     a distribution over each of the weights and biases
     in the layer.
     """
-    def __init__(self, in_features, out_features, p_logvar_init=-3, p_pi=1.0, q_logvar_init=-5):
+    def __init__(self, in_features, out_features, p_logvar_init=-3, p_pi=1.0, q_logvar_init=-5, bias=False):
         # p_logvar_init, p_pi can be either
         # (list/tuples): prior model is a mixture of Gaussians components=len(p_pi)=len(p_logvar_init)
         # float: Gussian distribution
@@ -187,8 +187,10 @@ class BBBLinearFactorial(nn.Module):
         self.qw_logvar = self.log_alpha + torch.log(1e-8 + self.qw_mean.pow(2))
 
         # optionally add bias
-        # self.qb_mean = Parameter(torch.Tensor(out_features))
-        # self.qb_logvar = Parameter(torch.Tensor(out_features))
+        self.bias = bias
+        if bias:
+            self.qb_mean = Parameter(torch.Tensor(out_features))
+            self.qb_logvar = Parameter(torch.Tensor(out_features))
 
         # ...and output...
         self.fc_qw_mean = Parameter(torch.Tensor(out_features, in_features))
@@ -196,14 +198,16 @@ class BBBLinearFactorial(nn.Module):
 
         # ...as normal distributions
         self.qw = Normal(mu=self.qw_mean, logvar=self.qw_logvar)
-        # self.qb = Normal(mu=self.qb_mean, logvar=self.qb_logvar)
+        if bias:
+            self.qb = Normal(mu=self.qb_mean, logvar=self.qb_logvar)
         self.fc_qw = Normalout(mu=self.fc_qw_mean, logvar=self.fc_qw_logvar)
 
         
 
         # prior model
         self.pw = distribution_selector(mu=0.0, logvar=p_logvar_init, pi=p_pi)
-        # self.pb = distribution_selector(mu=0.0, logvar=p_logvar_init, pi=p_pi)
+        if bias:
+            self.pb = distribution_selector(mu=0.0, logvar=p_logvar_init, pi=p_pi)
 
         # initialize all paramaters
         self.reset_parameters()
@@ -213,8 +217,9 @@ class BBBLinearFactorial(nn.Module):
         stdv = 10. / math.sqrt(self.in_features)
         self.qw_mean.data.uniform_(-stdv, stdv)
         #self.qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
-        # self.qb_mean.data.uniform_(-stdv, stdv)
-        # self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
+        if self.bias:
+            self.qb_mean.data.uniform_(-stdv, stdv)
+            self.qb_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.fc_qw_mean.data.uniform_(-stdv, stdv)
         self.fc_qw_logvar.data.uniform_(-stdv, stdv).add_(self.q_logvar_init)
         self.log_alpha.data.uniform_(-stdv, stdv)
@@ -232,6 +237,10 @@ class BBBLinearFactorial(nn.Module):
         fc_qw_mean = F.linear(input=input, weight=self.qw_mean)
         fc_qw_std = torch.sqrt(1e-8 + 
             F.linear(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2)))
+
+        if self.bias:
+            fc_qw_mean += self.qb_mean
+            fc_qw_std += torch.exp(self.qb_logvar)
 
         if cuda:
             fc_qw_mean.cuda()
