@@ -239,8 +239,8 @@ class BBBLinearFactorial(nn.Module):
             F.linear(input=input.pow(2), weight=torch.exp(self.log_alpha)*self.qw_mean.pow(2)))
 
         if self.bias:
-            fc_qw_mean += self.qb_mean
-            fc_qw_std += torch.exp(self.qb_logvar)
+            fc_qw_mean = fc_qw_mean + self.qb_mean
+            fc_qw_std =  fc_qw_std + torch.sqrt(1e-8 + torch.exp(self.qb_logvar))
 
         if cuda:
             fc_qw_mean.cuda()
