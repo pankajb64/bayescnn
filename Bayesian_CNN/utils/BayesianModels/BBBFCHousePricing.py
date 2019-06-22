@@ -4,15 +4,15 @@ from utils.BBBlayers import BBBLinearFactorial
 class BBBFCHousePricing(nn.Module):
     def __init__(self,inputs, bias=False):
         super(BBBFCHousePricing, self).__init__()
-        self.fc1 = BBBLinearFactorial(inputs, 8, bias=bias)
+        self.fc1 = BBBLinearFactorial(inputs, 2, bias=bias)
         self.soft1 = nn.ReLU()
 
-        self.fc2 = BBBLinearFactorial(8, 4, bias=bias)
-        self.soft2 = nn.ReLU()
+        '''self.fc2 = BBBLinearFactorial(8, 4, bias=bias)
+        self.soft2 = nn.ReLU()'''
 
-        self.fc3 = BBBLinearFactorial(4, 1, bias=bias)
+        self.fc3 = BBBLinearFactorial(2, 1, bias=bias)
 
-        layers = [self.fc1, self.soft1, self.fc2, self.soft2, self.fc3]
+        layers = [self.fc1, self.soft1, self.fc3]
 
         self.layers = nn.ModuleList(layers)
     
