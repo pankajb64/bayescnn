@@ -255,10 +255,6 @@ class BBBLinearFactorial(nn.Module):
         if cuda:
             output.cuda()
 
-        self.fc_qw_mean = fc_qw_mean
-        self.fc_qw_std = fc_qw_std
-        self.output = output
-
         w_sample = self.fc_qw.sample()
 
         # KL divergence
