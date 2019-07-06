@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 class DataProcessor:
     
-    def __init__(self, arcs_data_paths, lens_data_paths,test_data_paths, testlens_data_paths, CRay_data_path, numpix_side, max_noise_rms, max_psf_rms, max_cr_intensity, variable_noise_rms, pix_res, min_unmasked_flux, num_data_dirs, max_xy_range, num_out):
+    def __init__(self, ps_data_path, arcs_data_paths, lens_data_paths,test_data_paths, testlens_data_paths, CRay_data_path, numpix_side, max_noise_rms, max_psf_rms, max_cr_intensity, variable_noise_rms, pix_res, min_unmasked_flux, num_data_dirs, max_xy_range, num_out):
         
         self.arcs_data_paths = arcs_data_paths
         self.lens_data_paths = lens_data_paths
@@ -29,8 +29,8 @@ class DataProcessor:
 
         Y_all_train = [np.loadtxt(arcs_data_path + '/parameters_train.txt' ) for arcs_data_path in arcs_data_paths]
         Y_all_test = [np.loadtxt(test_data_path + '/parameters_test.txt' ) for test_data_path in test_data_paths]
-        R_n = np.loadtxt( 'data/PS_4_real.txt')
-        I_n = np.loadtxt( 'data/PS_4_imag.txt')
+        R_n = np.loadtxt( ps_data_path + '/PS_4_real.txt')
+        I_n = np.loadtxt( ps_data_path + '/PS_4_imag.txt')
 
         L_side = pix_res * numpix_side
         xv, yv = np.meshgrid( np.linspace(-L_side/2.0, L_side/2.0, num=numpix_side) ,  np.linspace(-L_side/2.0, L_side/2.0, num=numpix_side))
