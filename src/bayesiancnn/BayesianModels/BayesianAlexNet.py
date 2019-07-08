@@ -39,6 +39,9 @@ class BBBAlexNet(nn.Module):
         kl = 0
         fc_qw_mean = 0
         fc_qw_std = 0
+        
+        #import pdb; pdb.set_trace()
+
         for layer in self.layers:
             if hasattr(layer, 'convprobforward') and callable(layer.convprobforward):
                 x, _kl, = layer.convprobforward(x)

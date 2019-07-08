@@ -7,7 +7,7 @@ if ~exist('WRITE','var')
 end
 
 
-%rng(random_seed)
+rng(random_seed)
 
 
 zLENS = 0.5;
@@ -85,13 +85,12 @@ rfilt = sqrt(xsrc.^2+ysrc.^2);
 taper = 1./(1+(rfilt./(0.6.*pi./180./3600)).^6); taper = taper./max(taper(:));
 
 
-%{
 if random_seed==-1
    rng('shuffle')
 else
    rng(random_seed)
 end
-%}
+
 
 max_R_ein = 3.0 * (num_im_output_pix/192);
 max_elp = 0.9;
