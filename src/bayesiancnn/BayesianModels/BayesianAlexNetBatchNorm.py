@@ -1,0 +1,71 @@
+import torch.nn as nn
+from BBBlayers import BBBConv2d, BBBLinearFactorial, FlattenLayer
+
+
+class BBBAlexNetBatchNorm(nn.Module):
+    '''The architecture of AlexNet with Bayesian Layers'''
+
+    def __init__(self, outputs, inputs):
+        super(BBBAlexNet, self).__init__()
+        self.conv1 = BBBConv2d(inputs, 64, kernel_size=11, stride=4, padding=5)
+        self.soft1 = nn.Softplus()
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.bnorm1 = nn.BatchNorm2d(64)
+
+        self.conv2 = BBBConv2d(64, 192, kernel_size=5, padding=2)
+        self.soft2 = nn.Softplus()
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.bnorm2 = nn.BatchNorm2d(192)
+
+        self.conv3 = BBBConv2d(192, 384, kernel_size=3, padding=1)
+        self.soft3 = nn.Softplus()
+        self.bnorm3 = nn.BatchNorm2d(384)
+
+        self.conv4 = BBBConv2d(384, 256, kernel_size=3, padding=1)
+        self.soft4 = nn.Softplus()
+        self.bnorm4 = nn.BatchNorm2d(256)
+
+        self.conv5 = BBBConv2d(256, 128, kernel_size=3, padding=1)
+        self.soft5 = nn.Softplus()
+        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.bnorm5 = nn.BatchNorm2d(128)
+
+        self.flatten = FlattenLayer(1 * 1 * 128)
+        self.fc1 = BBBLinearFactorial(1* 1 * 128, outputs)
+
+
+        layers = [self.conv1, self.soft1, self.pool1, self.bnorm1, self.conv2, self.soft2, self.pool2, self.bnorm2, self.conv3, self.soft3, self.bnorm3,
+                  self.conv4, self.soft4, self.bnorm4, self.conv5, self.soft5, self.pool3, self.bnorm5, self.flatten, self.fc1]
+
+        self.layers = nn.ModuleList(layers)
+
+    def probforward(self, x, ret_mean_std=False):
+        'Forward pass with Bayesian weights'
+        kl = 0
+        fc_qw_mean = 0
+        fc_qw_std = 0
+        
+        #import pdb; pdb.set_trace()
+
+        for layer in self.layers:
+            if hasattr(layer, 'convprobforward') and callable(layer.convprobforward):
+                x, _kl, = layer.convprobforward(x)
+                kl += _kl
+
+            elif hasattr(layer, 'fcprobforward') and callable(layer.fcprobforward):
+                if ret_mean_std:
+                    x, _kl, fc_qw_mean, fc_qw_std = layer.fcprobforward(x, True)
+                    kl += _kl
+                else:
+                    #print(layer)
+                    x, _kl = layer.fcprobforward(x, ret_mean_std=False)
+                    kl += _kl    
+            else:
+                x = layer(x)
+        logits = x
+        #print('logits', logits)
+
+        if not ret_mean_std:
+            return logits, kl
+        else:
+            return logits, kl, fc_qw_mean, fc_qw_std
