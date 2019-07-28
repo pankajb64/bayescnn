@@ -3,10 +3,10 @@ from BBBlayers import BBBConv2d, BBBLinearFactorial, FlattenLayer
 
 
 class BBBAlexNetBatchNorm(nn.Module):
-    '''The architecture of AlexNet with Bayesian Layers'''
+    '''BBBAlexNet with Batch Normalization'''
 
     def __init__(self, outputs, inputs):
-        super(BBBAlexNet, self).__init__()
+        super(BBBAlexNetBatchNorm, self).__init__()
         self.conv1 = BBBConv2d(inputs, 64, kernel_size=11, stride=4, padding=5)
         self.soft1 = nn.Softplus()
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
