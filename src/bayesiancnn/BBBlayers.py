@@ -229,7 +229,7 @@ class BBBLinearFactorial(nn.Module):
             inp, kl = input
         else:
             inp, kl = input, 0    
-        out, kl2 = self.fcprobforward(in)
+        out, kl2 = self.fcprobforward(inp)
         return (out, kl + kl2)
         #raise NotImplementedError()
 
