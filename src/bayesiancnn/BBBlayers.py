@@ -225,7 +225,7 @@ class BBBLinearFactorial(nn.Module):
         self.log_alpha.data.uniform_(-stdv, stdv)
 
     def forward(self, input):
-        fcprobforward(input)
+        self.fcprobforward(input)
         #raise NotImplementedError()
 
     def fcprobforward(self, input, ret_mean_std=False):
