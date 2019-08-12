@@ -225,7 +225,12 @@ class BBBLinearFactorial(nn.Module):
         self.log_alpha.data.uniform_(-stdv, stdv)
 
     def forward(self, input):
-        self.fcprobforward(input)
+        if type(input) is tuple:
+            inp, kl = input
+        else:
+            inp, kl = input, 0    
+        out, kl2 = self.fcprobforward(in)
+        return (out, kl + kl2)
         #raise NotImplementedError()
 
     def fcprobforward(self, input, ret_mean_std=False):
